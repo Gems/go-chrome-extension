@@ -21,6 +21,7 @@ var checkAndSetup = function() {
 				return;
 			
 			label = label.trim();
+			
 			try
 			{
 				var stageHref = el.parents('tr').find('#stage-detail-' + label + '-Build .detail').attr('href');
