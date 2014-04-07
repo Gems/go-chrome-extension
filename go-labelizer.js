@@ -11,7 +11,7 @@ var checkAndSetup = function() {
 		return true;
 	}
 	
-	$('head').append('<style type="text/css"> .pipeline-label-branch { vertical-align: middle; font-weight: normal; } .pipeline-master { font-weight: bold; } </style>');
+	$('head').append('<style type="text/css"> .pipeline-label-branch { vertical-align: middle; font-weight: normal; display: inline-block; margin: -5px 0 0 5px; } .pipeline-master { font-weight: bold; } </style>');
 
 	window.paginator.setParametersFromJson = function() {
 		$('.pipeline-label').each(function(idx) {
