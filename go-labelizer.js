@@ -20,24 +20,31 @@ var checkAndSetup = function() {
 			console.log('Index ' + idx + ', found: ' + label);
 			
 			if (!label) return;
-
-			var stageHref = el.parent('tr').find('#stage-detail-' + label + '-Build .detail').attr('href');
-			var consoleHref = stageHref.replace('pipelines') + 'Create_package/cruise-output/console.log';
-
-			$.ajax(consoleHref, {
-				success: function(data, st, xhr) {
-					console.log("Here we are");
-					var branch = /overriding environment variable 'BRANCH' with value '([^']+)'/.exec(data);
-
-					if (!branch) {
-						return;
+			
+			try
+			{
+				var stageHref = el.parent('tr').find('#stage-detail-' + label + '-Build .detail').attr('href');
+				var consoleHref = stageHref.replace('pipelines') + 'Create_package/cruise-output/console.log';
+	
+				$.ajax(consoleHref, {
+					success: function(data, st, xhr) {
+						console.log("Here we are");
+						var branch = /overriding environment variable 'BRANCH' with value '([^']+)'/.exec(data);
+	
+						if (!branch) {
+							return;
+						}
+	
+						branch = branch[1];
+	
+						el.find('span').append($(branch));
 					}
-
-					branch = branch[1];
-
-					el.find('span').append($(branch));
-				}
-			});
+				});
+			}
+			catch(e)
+			{
+				console.log("go-labelizer error: " + e);
+			}
 		});
 
 		return PaginatorSetParametersFromJson.apply(window.paginator, arguments);
