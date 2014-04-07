@@ -15,7 +15,7 @@ var checkAndSetup = function() {
 		console.log('Everything has to be setted up');
 
 		$('.pipeline-label').each(function(idx) {
-			var el = $(this), label = el.html();
+			var el = $(this), label = el.text();
 			
 			console.log('Index ' + idx + ', found: ' + label);
 			
