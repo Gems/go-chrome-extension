@@ -17,13 +17,12 @@ var checkAndSetup = function() {
 		$('.pipeline-label').each(function(idx) {
 			var el = $(this), label = el.text();
 			
-			console.log('Index ' + idx + ', found: ' + label);
-			
-			if (!label) return;
+			if (!label) 
+				return;
 			
 			try
 			{
-				var stageHref = el.parents('tr').eq(0).find('#stage-detail-' + label + '-Build .detail').attr('href');
+				var stageHref = el.parents('tr').eq(1).find('#stage-detail-' + label + '-Build .detail').attr('href');
 				var consoleHref = stageHref.replace('pipelines') + 'Create_package/cruise-output/console.log';
 	
 				$.ajax(consoleHref, {
