@@ -23,6 +23,7 @@ var readyStateCheckInterval = setInterval(function() {
 
 			$.ajax(consoleHref, {
 				success: function(data, st, xhr) {
+					console.log("Here we are");
 					var branch = /overriding environment variable 'BRANCH' with value '([^']+)'/.exec(data);
 
 					if (!branch) {
