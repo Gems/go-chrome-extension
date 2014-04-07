@@ -13,7 +13,7 @@ var checkAndSetup = function() {
 	
 	$('head').append('<style type="text/css"> .pipeline-label-branch { vertical-align: middle; font-weight: normal; display: inline-block; margin: -5px 0 0 5px; } .pipeline-master { font-weight: bold; } </style>');
 
-	window.paginator.setParametersFromJson = function() {
+	var labelize = function() {
 		$('.pipeline-label').each(function(idx) {
 			var el = $(this), label = el.text();
 			
@@ -42,10 +42,16 @@ var checkAndSetup = function() {
 			{
 				console.error(e);
 			}
-		});
+		});		
+	};
+
+	window.paginator.setParametersFromJson = function() {
+		labelize();
 
 		return PaginatorSetParametersFromJson.apply(window.paginator, arguments);
 	};
+	
+	labelize();
 	
 	return true;
 };
