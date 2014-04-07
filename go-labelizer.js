@@ -38,6 +38,9 @@ var checkAndSetup = function() {
 						branch = branch[1];
 	
 						el.find('span').append($(branch));
+					}, 
+					complete: function(xhr, st) {
+						console.log(st);
 					}
 				});
 			}
