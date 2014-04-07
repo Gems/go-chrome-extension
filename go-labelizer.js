@@ -14,8 +14,12 @@ var checkAndSetup = function() {
 	window.paginator.setParametersFromJson = function() {
 		console.log('Everything has to be setted up');
 
-		$('.pipeline-label').each(function() {
+		$('.pipeline-label').each(function(idx) {
 			var el = $(this), label = el.html();
+			
+			console.log('Index ' + idx + ', found: ' + label);
+			
+			if (!label) return;
 
 			var stageHref = el.parent('tr').find('#stage-detail-' + label + '-Build .detail').attr('href');
 			var consoleHref = stageHref.replace('pipelines') + 'Create_package/cruise-output/console.log';
