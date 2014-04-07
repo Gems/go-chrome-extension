@@ -1,16 +1,17 @@
-var readyStateCheckInterval = setInterval(function() {
-	if (!window.paginator)
-		return;
-	
-	window.clearInterval(readyStateCheckInterval);
+var checkAndSetup = function() {
+	if (!window.paginator) {
+		setTimeout(checkAndSetup, 50);
+		return false;
+	}
 	
 	var $ = jQuery, PaginatorSetParametersFromJson = window.paginator.setParametersFromJson;
 
 	if (!PaginatorSetParametersFromJson) {
-		return console.log("Can't find paginator method");
+		console.log("Can't find paginator method")
+		return true;
 	}
 
-	paginator.setParametersFromJson = function() {
+	window.paginator.setParametersFromJson = function() {
 		console.log('Everything has to be setted up');
 
 		PaginatorSetParametersFromJson.apply(this, arguments);
@@ -37,4 +38,8 @@ var readyStateCheckInterval = setInterval(function() {
 			});
 		});
 	};
-}, 50);
+	
+	return true;
+};
+
+checkAndSetup();
