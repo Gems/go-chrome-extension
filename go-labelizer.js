@@ -36,7 +36,7 @@ var checkAndSetup = function() {
 
 					branch = branch[1];
 
-					el.find('span').append(document.createTextNode(branch));
+					el.find('span').text(branch);
 				});
 			}
 			catch(e)
