@@ -26,7 +26,7 @@ var checkAndSetup = function() {
 				var stageHref = el.parents('tr').find('#stage-detail-' + label + '-Build .detail').attr('href');
 				var consoleHref = stageHref.replace('pipelines', 'files') + '/Create_package/cruise-output/console.log';
 	
-				$.ajax(consoleHref).done(function(data, st, xhr) {
+				$.ajax({ url: consoleHref }).done(function(data, st, xhr) {
 					console.log("Here we are");
 					var branch = /overriding environment variable 'BRANCH' with value '([^']+)'/.exec(data);
 
