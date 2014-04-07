@@ -23,7 +23,7 @@ var checkAndSetup = function() {
 			
 			try
 			{
-				var stageHref = el.parent('tr').find('#stage-detail-' + label + '-Build .detail').attr('href');
+				var stageHref = el.parents('tr').eq(0).find('#stage-detail-' + label + '-Build .detail').attr('href');
 				var consoleHref = stageHref.replace('pipelines') + 'Create_package/cruise-output/console.log';
 	
 				$.ajax(consoleHref, {
