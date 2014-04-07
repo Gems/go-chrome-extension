@@ -14,8 +14,6 @@ var checkAndSetup = function() {
 	window.paginator.setParametersFromJson = function() {
 		console.log('Everything has to be setted up');
 
-		PaginatorSetParametersFromJson.apply(window.paginator, arguments);
-
 		$('.pipeline-label').each(function() {
 			var el = $(this), label = el.html();
 
@@ -37,6 +35,8 @@ var checkAndSetup = function() {
 				}
 			});
 		});
+
+		return PaginatorSetParametersFromJson.apply(window.paginator, arguments);
 	};
 	
 	return true;
