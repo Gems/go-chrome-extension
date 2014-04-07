@@ -26,22 +26,17 @@ var checkAndSetup = function() {
 				var stageHref = el.parents('tr').find('#stage-detail-' + label + '-Build .detail').attr('href');
 				var consoleHref = stageHref.replace('pipelines', 'files') + '/Create_package/cruise-output/console.log';
 	
-				$.ajax(consoleHref, {
-					success: function(data, st, xhr) {
-						console.log("Here we are");
-						var branch = /overriding environment variable 'BRANCH' with value '([^']+)'/.exec(data);
-	
-						if (!branch) {
-							return;
-						}
-	
-						branch = branch[1];
-	
-						el.find('span').append($(branch));
-					}, 
-					complete: function(xhr, st) {
-						console.log(st);
+				$.ajax(consoleHref).done(function(data, st, xhr) {
+					console.log("Here we are");
+					var branch = /overriding environment variable 'BRANCH' with value '([^']+)'/.exec(data);
+
+					if (!branch) {
+						return;
 					}
+
+					branch = branch[1];
+
+					el.find('span').append($(branch));
 				});
 			}
 			catch(e)
