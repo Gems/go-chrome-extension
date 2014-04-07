@@ -10,10 +10,10 @@ var checkAndSetup = function() {
 		console.log("Can't find paginator method")
 		return true;
 	}
+	
+	$('head').append('<style type="text/css"> .pipeline-label-branch { vertical-align: middle; font-weight: normal; } .pipeline-master { font-weight: bold; } </style>');
 
 	window.paginator.setParametersFromJson = function() {
-		console.log('Everything has to be setted up');
-
 		$('.pipeline-label').each(function(idx) {
 			var el = $(this), label = el.text();
 			
@@ -27,7 +27,6 @@ var checkAndSetup = function() {
 				var consoleHref = stageHref.replace('pipelines', 'files') + '/Create_package/cruise-output/console.log';
 	
 				$.ajax({ url: consoleHref }).done(function(data, st, xhr) {
-					console.log("Here we are");
 					var branch = /overriding environment variable 'BRANCH' with value '([^']+)'/.exec(data);
 
 					if (!branch) {
@@ -35,13 +34,13 @@ var checkAndSetup = function() {
 					}
 
 					branch = branch[1];
-
-					el.append(document.createTextNode(branch));
+					
+					el.append('<span class="pipeline-label-branch pipeline-' + branch + '" title="' + branch + '">' + (branch === 'master' ? 'master' : 'feature') + '</span>');
 				});
 			}
 			catch(e)
 			{
-				console.log("go-labelizer error: " + e);
+				console.error(e);
 			}
 		});
 
