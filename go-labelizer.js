@@ -1,68 +1,91 @@
-var checkAndSetup = function() {
-	if (!window.paginator) {
-		setTimeout(checkAndSetup, 50);
-		return false;
-	}
+(function($) {
+	var branchRegex = /overriding environment variable 'BRANCH' with value '([^']+)'/,
+		retryCountUntilFail = 3;
 
-	var cache = {};
+	function getBranchInfo(stageLocator, callback) {
+		$.get('/go/files/' + stageLocator + '/Create_package/cruise-output/console.log', function(data) {
+			var branch = branchRegex.exec(data);
 
-	var $ = jQuery, PaginatorSetParametersFromJson = window.paginator.setParametersFromJson;
-
-	if (!PaginatorSetParametersFromJson) {
-		console.log("Can't find paginator method")
-		return true;
-	}
-
-	$('head').append('<style type="text/css"> .pipeline-label-branch { vertical-align: middle; font-weight: normal; display: inline-block; margin: -5px 0 0 5px; } .pipeline-master { font-weight: bold; } </style>');
-
-	var putLabel = function(el, branch) {
-		el.append('<span class="pipeline-label-branch pipeline-' + branch + '" title="' + branch + '">' + (branch === 'master' ? 'master' : 'feature') + '</span>');
-	};
-
-	var labelize = function() {
-		$('.pipeline-label').each(function(idx) {
-			var el = $(this), label = el.text();
-
-			if (!label)
-				return;
-
-			label = label.trim();
-
-			if (!!cache[label]) {
-				putLabel(el, cache[label]);
-				return;
-			}
-
-			try {
-				var stageHref = el.parents('tr').find('#stage-detail-' + label + '-Build .detail').attr('href');
-				var consoleHref = stageHref.replace('pipelines', 'files') + '/Create_package/cruise-output/console.log';
-
-				$.ajax({ url: consoleHref }).done(function(data, st, xhr) {
-					var branch = /overriding environment variable 'BRANCH' with value '([^']+)'/.exec(data);
-
-					if (!branch) {
-						return;
-					}
-
-					cache[label] = branch = branch[1];
-
-					putLabel(el, branch);
-				});
-			} catch(e) {
-				console.error(e);
+			if (typeof(callback) === 'function') {
+				callback(branch ? branch[1] : null);
 			}
 		});
-	};
+	}
 
-	window.paginator.setParametersFromJson = function() {
-		labelize();
+	$(function() {
+		var pipelineHistory = window.pipelineHistoryObserver,
+			activeRequests = {},
+			counts = {};
 
-		return PaginatorSetParametersFromJson.apply(window.paginator, arguments);
-	};
+		if (pipelineHistory) {
+			pipelineHistory._template.process = (function(process) {
+				return function(context, flags) {
+					var result = process.apply(this, arguments);
 
-	labelize();
+					if (this.name === 'pipeline-history-list-template') {
+						var container = document.createElement('div');
 
-	return true;
-};
+						container.innerHTML = result;
 
-checkAndSetup();
+						$('.pipeline-label[id]', container).each(function(i, item) {
+							var $item = $(item),
+								itemData = context.data.groups[0].history[i],
+								label = $('<span>').css({
+									'display': 'inline-block',
+									'margin': '2px 0',
+									'padding': '.2em .6em .3em',
+									'font-size': '11px',
+									'font-weight': '700',
+									'line-height': '1',
+									'color': '#fff',
+									'text-align': 'center',
+									'white-space': 'nowrap',
+									'vertical-align': 'baseline',
+									'border-radius': '.25em',
+									'-webkit-font-smoothing': 'antialiased',
+									'-moz-osx-font-smoothing': 'grayscale'
+								}),
+								storageItem = localStorage.getItem(item.id);
+
+							if (storageItem) {
+								label
+									.html(storageItem)
+									.css('background-color', storageItem === 'master' ? '#5cb85c' : '#428bca');
+							} else if (counts[item.id] && counts[item.id] >= retryCountUntilFail) {
+								label
+									.html('unknown branch')
+									.css('background-color', '#d9534f');
+							} else {
+								label
+									.html(counts[item.id] ? 'trying again' : 'loading info')
+									.css('background-color', '#999');
+							}
+
+							if (!activeRequests[item.id] && storageItem == null) {
+								activeRequests[item.id] = true;
+
+								getBranchInfo(itemData.stages[0].stageLocator, function(branch) {
+									if (branch != null) {
+										localStorage.setItem(item.id, branch);
+									} else {
+										if (!counts[item.id]) {
+											counts[item.id] = 0;
+										}
+										counts[item.id]++;
+									}
+									activeRequests[item.id] = false;
+								});
+							}
+
+							$item
+								.parent()
+								.append('<div>', label);
+						});
+						result = container.innerHTML;
+					}
+					return result;
+				}
+			})(pipelineHistory._template.process);
+		}
+	});
+})(window.jQuery);
