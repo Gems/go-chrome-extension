@@ -12,10 +12,26 @@
 		});
 	}
 
+	function appendStyles() {
+		var link = document.createElement('link');
+
+		// Проставляем атрибуты.
+		link.media = 'all';
+		link.type = 'text/css';
+		link.srs = 'https://rawgithub.com/Gems/go-chrome-extension/master/go-labelizer.css';
+
+		// И вставляем в HEAD стили.
+		$('head').append(link);
+	}
+
 	$(function() {
 		var pipelineHistory = window.pipelineHistoryObserver,
 			activeRequests = {},
 			counts = {};
+
+		// Чтоб не переделывать inject.js и не пересобирать хромовский экстеншн вставляем в DOM 
+		// кастомные стили в этом скрипте.
+		appendStyles();
 
 		if (pipelineHistory) {
 			pipelineHistory._template.process = (function(process) {
@@ -30,35 +46,19 @@
 						$('.pipeline-label[id]', container).each(function(i, item) {
 							var $item = $(item),
 								itemData = context.data.groups[0].history[i],
-								label = $('<span>').css({
-									'display': 'inline-block',
-									'margin': '2px 0',
-									'padding': '.2em .6em .3em',
-									'font-size': '11px',
-									'font-weight': '700',
-									'line-height': '1',
-									'color': '#fff',
-									'text-align': 'center',
-									'white-space': 'nowrap',
-									'vertical-align': 'baseline',
-									'border-radius': '.25em',
-									'-webkit-font-smoothing': 'antialiased',
-									'-moz-osx-font-smoothing': 'grayscale'
-								}),
+								label = $('<span>').addClass('go-ext-labels'),
 								storageItem = localStorage.getItem(item.id);
 
 							if (storageItem) {
 								label
 									.html(storageItem)
-									.css('background-color', storageItem === 'master' ? '#5cb85c' : '#428bca');
+									.addClass(storageItem === 'master' ? 'go-ext-labels--success' : 'go-ext-labels--info');
 							} else if (counts[item.id] && counts[item.id] >= retryCountUntilFail) {
 								label
 									.html('unknown branch')
-									.css('background-color', '#d9534f');
+									.addClass('go-ext-labels--error');
 							} else {
-								label
-									.html(counts[item.id] ? 'trying again' : 'loading info')
-									.css('background-color', '#999');
+								label.html(counts[item.id] ? 'trying again' : 'loading info');
 							}
 
 							if (!activeRequests[item.id] && storageItem == null) {
