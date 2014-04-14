@@ -16,9 +16,9 @@
 		var link = document.createElement('link');
 
 		// Проставляем атрибуты.
-		link.media = 'all';
 		link.type = 'text/css';
-		link.href = 'https://rawgithub.com/Gems/go-chrome-extension/master/go-labelizer.css';
+		link.rel = 'stylesheet';
+		link.href = 'https://rawgit.com/Gems/go-chrome-extension/master/go-labelizer.css';
 
 		// И вставляем в HEAD стили.
 		$('head').append(link);
@@ -56,8 +56,10 @@
 									label.addClass('go-ext-labels--success');
 								} else {
 									label
-										.attr('target', '_blank')
-										.attr('href', 'https://github.inn.ru/4game-web/com.4game/compare/' + storageItem)
+										.attr({
+											target: '_blank',
+											href: 'https://github.inn.ru/4game-web/com.4game/compare/' + storageItem
+										})
 										.addClass('go-ext-labels--info');
 								}
 							} else if (counts[item.id] && counts[item.id] >= retryCountUntilFail) {
