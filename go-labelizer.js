@@ -46,13 +46,20 @@
 						$('.pipeline-label[id]', container).each(function(i, item) {
 							var $item = $(item),
 								itemData = context.data.groups[0].history[i],
-								label = $('<span>').addClass('go-ext-labels'),
+								label = $('<a>').addClass('go-ext-labels'),
 								storageItem = localStorage.getItem(item.id);
 
 							if (storageItem) {
-								label
-									.html(storageItem)
-									.addClass(storageItem === 'master' ? 'go-ext-labels--success' : 'go-ext-labels--info');
+								label.html(storageItem);
+
+								if (storageItem === 'master') {
+									label.addClass('go-ext-labels--success');
+								} else {
+									label
+										.attr('target', '_blank')
+										.attr('href', 'https://github.inn.ru/4game-web/com.4game/compare/' + storageItem)
+										.addClass('go-ext-labels--info');
+								}
 							} else if (counts[item.id] && counts[item.id] >= retryCountUntilFail) {
 								label
 									.html('unknown branch')
