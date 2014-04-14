@@ -18,7 +18,7 @@
 		// Проставляем атрибуты.
 		link.media = 'all';
 		link.type = 'text/css';
-		link.srs = 'https://rawgithub.com/Gems/go-chrome-extension/master/go-labelizer.css';
+		link.href = 'https://rawgithub.com/Gems/go-chrome-extension/master/go-labelizer.css';
 
 		// И вставляем в HEAD стили.
 		$('head').append(link);
