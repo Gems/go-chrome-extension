@@ -1,0 +1,28 @@
+.go-ext-labels {
+	font-size: 11px;
+	font-weight: 700;
+	line-height: 1;
+	color: #fff;
+	text-align: center;
+	white-space: nowrap;
+	border-radius: .25em;
+	background-color: #999;
+	margin: 2px 0;
+	padding: .2em .6em .3em;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	display: inline-block;
+	vertical-align: baseline;
+}
+
+.go-ext-labels--success {
+	background-color: #5cb85c;
+}
+
+.go-ext-labels--error {
+	background-color: #d9534f;
+}
+
+.go-ext-labels--info {
+	background-color: #428bca;
+}
