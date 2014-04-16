@@ -47,12 +47,7 @@
 							var $item = $(item),
 								itemData = context.data.groups[0].history[i],
 								label = $('<a>').addClass('go-ext-labels'),
-								storageItem = localStorage.getItem(item.id),
-								isCorrectPipeline = itemData.stages[0].stageLocator.indexOf('4gametest.com') >= 0;
-
-							if (!isCorrectPipeline) {
-								return;
-							}
+								storageItem = localStorage.getItem(item.id);
 
 							if (storageItem) {
 								label.html(storageItem);
