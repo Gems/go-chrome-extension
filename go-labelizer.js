@@ -95,6 +95,13 @@
 					return result;
 				}
 			})(pipelineHistory._template.process);
+
+			// Сразу же тригерим отрисовку с последними данными что хранятся в кеше.
+			if (window.dashboard_periodical_executer) {
+				window.dashboard_periodical_executer._loop_observers({
+					responseText: window.dashboard_periodical_executer._json_text_cache
+				}, window.dashboard_periodical_executer.generateSequenceNumber());
+			}
 		}
 	});
 })(window.jQuery);
