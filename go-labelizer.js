@@ -93,14 +93,14 @@
 										}
 										counts[item.id]++;
 									}
-									activeRequests[item.id] = null;
+									delete activeRequests[item.id];
 								});
 							}
 
 							$parent.append($container);
 							$container.append(label);
 
-							if (itemData.stages[1].stageStatus.toLowerCase() == 'passed') {
+							if (storageItem != null && itemData.stages[1].stageStatus.toLowerCase() == 'passed') {
 								var qaUrl;
 
 								if (storageItem == 'master') {
