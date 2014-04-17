@@ -6,7 +6,7 @@
 	white-space: nowrap;
 	border-radius: .25em;
 	background-color: #999;
-	margin: 2px 0;
+	margin: 2px 5px 2px 0;
 	padding: .2em .6em .3em;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
@@ -34,4 +34,12 @@
 
 .go-ext-labels--info {
 	background-color: #428bca;
+}
+
+.go-ext-labels--link {
+	background-color: #5bc0de;
+}
+
+.go-ext-container {
+	white-space: nowrap;
 }

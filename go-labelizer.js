@@ -3,11 +3,18 @@
 		retryCountUntilFail = 3;
 
 	function getBranchInfo(stageLocator, callback) {
-		$.get('/go/files/' + stageLocator + '/Create_package/cruise-output/console.log', function(data) {
-			var branch = branchRegex.exec(data);
+		return $.ajax({
+			url: '/go/files/' + stageLocator + '/Create_package/cruise-output/console.log',
+			complete: function(jqXHR, textStatus) {
+				var branch;
 
-			if (typeof(callback) === 'function') {
-				callback(branch ? branch[1] : null);
+				if (typeof(jqXHR.responseText) === 'string') {
+					branch = branchRegex.exec(jqXHR.responseText);
+				}
+
+				if (typeof(callback) === 'function') {
+					callback(branch ? branch[1] : null);
+				}
 			}
 		});
 	}
@@ -45,6 +52,8 @@
 
 						$('.pipeline-label[id]', container).each(function(i, item) {
 							var $item = $(item),
+								$parent = $item.parent(),
+								$container = $('<div>').addClass('go-ext-container'),
 								itemData = context.data.groups[0].history[i],
 								label = $('<a>').addClass('go-ext-labels'),
 								storageItem = localStorage.getItem(item.id);
@@ -70,10 +79,12 @@
 								label.html(counts[item.id] ? 'trying again' : 'loading info');
 							}
 
-							if (!activeRequests[item.id] && storageItem == null) {
-								activeRequests[item.id] = true;
+							if (activeRequests[item.id]) {
+								activeRequests[item.id].abort();
+							}
 
-								getBranchInfo(itemData.stages[0].stageLocator, function(branch) {
+							if (storageItem == null && (!counts[item.id] || counts[item.id] && counts[item.id] < retryCountUntilFail)) {
+								activeRequests[item.id] = getBranchInfo(itemData.stages[0].stageLocator, function(branch) {
 									if (branch != null) {
 										localStorage.setItem(item.id, branch);
 									} else {
@@ -82,13 +93,31 @@
 										}
 										counts[item.id]++;
 									}
-									activeRequests[item.id] = false;
+									activeRequests[item.id] = null;
 								});
 							}
 
-							$item
-								.parent()
-								.append('<div>', label);
+							$parent.append($container);
+							$container.append(label);
+
+							if (itemData.stages[1].stageStatus.toLowerCase() == 'passed') {
+								var qaUrl;
+
+								if (storageItem == 'master') {
+									qaUrl = 'https://ru.4gametest.com/';
+								} else {
+									qaUrl = 'https://' + storageItem.replace(/^feature-/, '') + '-ru.4gametest.com/';
+								}
+
+								$('<a>')
+									.addClass('go-ext-labels go-ext-labels--link')
+									.html('go to: ' + qaUrl)
+									.attr({
+										target: '_blank',
+										href: qaUrl
+									})
+									.appendTo($container);
+							}
 						});
 						result = container.innerHTML;
 					}
