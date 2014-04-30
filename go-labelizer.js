@@ -2,9 +2,15 @@
 	var branchRegex = /overriding environment variable 'BRANCH' with value '([^']+)'/,
 		retryCountUntilFail = 3;
 
-	function getBranchInfo(stageLocator, callback) {
+	function getBranchInfo(pipelineName, stageLocator, callback) {
+		var map = {
+			"api.4gametest.com": "Create-Package"
+		};
+		
+		var stageName = map[pipelineName] || "Create_package";
+		
 		return $.ajax({
-			url: '/go/files/' + stageLocator + '/Create_package/cruise-output/console.log',
+			url: '/go/files/' + stageLocator + '/' + stageName + '/cruise-output/console.log',
 			complete: function(jqXHR, textStatus) {
 				var branch;
 
@@ -84,7 +90,7 @@
 							}
 
 							if (storageItem == null && (!counts[item.id] || counts[item.id] && counts[item.id] < retryCountUntilFail)) {
-								activeRequests[item.id] = getBranchInfo(itemData.stages[0].stageLocator, function(branch) {
+								activeRequests[item.id] = getBranchInfo(context.data.pipelineName, itemData.stages[0].stageLocator, function(branch) {
 									if (branch != null) {
 										localStorage.setItem(item.id, branch);
 									} else {
