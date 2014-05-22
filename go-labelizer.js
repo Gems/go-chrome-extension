@@ -5,6 +5,7 @@
 	function getBranchInfo(pipelineName, stageLocator, callback) {
 		var map = {
 			"api.4gametest.com": "Create-Package"
+			"m.4gametest.com": "Create-Package"
 		};
 		
 		var stageName = map[pipelineName] || "Create_package";
