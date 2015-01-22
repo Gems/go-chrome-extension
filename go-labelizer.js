@@ -6,7 +6,8 @@
 		var map = {
 			"api.4gametest.com": "Create-Package",
 			"api2.4gametest.com": "Build",
-			"m.4gametest.com": "Create-Package"
+			"m.4gametest.com": "Create-Package",
+			"puppet-qa": "Build"
 		};
 		
 		var stageName = map[pipelineName] || "Create_package";
