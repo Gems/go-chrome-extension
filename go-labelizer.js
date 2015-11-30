@@ -1,6 +1,7 @@
 (function($) {
-	var branchRegex = /overriding environment variable 'BRANCH' with value '([^']+)'/,
-		retryCountUntilFail = 3;
+	var branchRegex = /overriding environment variable 'BRANCH' with value '([^']+)'/;
+	var packageRegex = /source package inn-com-4game-www-/;
+	var retryCountUntilFail = 3;
 
 	function getBranchInfo(pipelineName, stageLocator, callback) {
 		var map = {
@@ -18,6 +19,12 @@
 
 				if (typeof(jqXHR.responseText) === 'string') {
 					branch = branchRegex.exec(jqXHR.responseText);
+				}
+
+				// Если в логе есть информация о том что пакет собрался и нет записи о ветке, 
+				// то значит собирается мастер.
+				if (!branch && packageRegex.test(jqXHR.responseText)) {
+					branch = [false, 'master'];
 				}
 
 				if (typeof(callback) === 'function') {
