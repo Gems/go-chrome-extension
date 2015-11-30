@@ -1,6 +1,6 @@
 (function($) {
 	var branchRegex = /overriding environment variable 'BRANCH' with value '([^']+)'/;
-	var packageRegex = /source package inn-com-4game-www-/;
+	var packageRegex = /source package inn\-com\-4game\-www\-/;
 	var retryCountUntilFail = 3;
 
 	function getBranchInfo(pipelineName, stageLocator, callback) {
