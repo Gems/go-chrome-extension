@@ -25,7 +25,17 @@
 				return 'https://ru.4gametest.com/4gamer-' + item.replace(/^feature-/, '') + '/';
 			}
 		},
-	}
+	};
+
+	var compareMap = {
+		'4gametest.com': function(item) {
+			return 'https://github.inn.ru/4game-web/com.4game/compare/' + item;
+		},
+
+		'4gamer-generator-featured': function(item) {
+			return 'https://github.com/InnovaCo/4game-media/compare/' + item;
+		},
+	};
 
 	function getBranchInfo(pipelineName, stageLocator, callback) {
 		var stageName = map[pipelineName] || 'Create_package';
