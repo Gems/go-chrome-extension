@@ -1,16 +1,35 @@
 (function($) {
-	var branchRegex = /overriding environment variable 'BRANCH' with value '([^']+)'/,
-		retryCountUntilFail = 3;
+	var branchRegex = /overriding environment variable 'BRANCH' with value '([^']+)'/;
+	var retryCountUntilFail = 3;
+
+	var map = {
+		'api2.4gametest.com': 'Build',
+		'm.4gametest.com': 'Create-Package',
+		'api.4gametest.com': 'Create-Package',
+		'4gamer-generator-featured': 'Create-Package',
+	};
+
+	var linksMap = {
+		'4gametest.com': function(item) {
+			if (item == 'master') {
+				return 'https://ru.4gametest.com/';
+			} else {
+				return 'https://' + item.replace(/^feature-/, '') + '-ru.4gametest.com/';
+			}
+		},
+
+		'4gamer-generator-featured': function(item) {
+			if (item == 'master') {
+				return 'https://ru.4gametest.com/4gamer/';
+			} else {
+				return 'https://ru.4gametest.com/4gamer-' + item.replace(/^feature-/, '') + '/';
+			}
+		},
+	}
 
 	function getBranchInfo(pipelineName, stageLocator, callback) {
-		var map = {
-			"api.4gametest.com": "Create-Package",
-			"api2.4gametest.com": "Build",
-			"m.4gametest.com": "Create-Package"
-		};
-		
-		var stageName = map[pipelineName] || "Create_package";
-		
+		var stageName = map[pipelineName] || 'Create_package';
+
 		return $.ajax({
 			url: '/go/files/' + stageLocator + '/' + stageName + '/cruise-output/console.log',
 			complete: function(jqXHR, textStatus) {
@@ -59,12 +78,13 @@
 						container.innerHTML = result;
 
 						$('.pipeline-label[id]', container).each(function(i, item) {
-							var $item = $(item),
-								$parent = $item.parent(),
-								$container = $('<div>').addClass('go-ext-container'),
-								itemData = context.data.groups[0].history[i],
-								label = $('<a>').addClass('go-ext-labels'),
-								storageItem = localStorage.getItem(item.id);
+							var $item = $(item);
+							var $parent = $item.parent();
+							var $container = $('<div>').addClass('go-ext-container');
+							var itemData = context.data.groups[0].history[i];
+							var label = $('<a>').addClass('go-ext-labels');
+							var storageItem = localStorage.getItem(item.id);
+							var pipelineName = context.data.pipelineName;
 
 							if (storageItem) {
 								label.html(storageItem);
@@ -92,7 +112,7 @@
 							}
 
 							if (storageItem == null && (!counts[item.id] || counts[item.id] && counts[item.id] < retryCountUntilFail)) {
-								activeRequests[item.id] = getBranchInfo(context.data.pipelineName, itemData.stages[0].stageLocator, function(branch) {
+								activeRequests[item.id] = getBranchInfo(pipelineName, itemData.stages[0].stageLocator, function(branch) {
 									if (branch != null) {
 										localStorage.setItem(item.id, branch);
 									} else {
@@ -109,22 +129,18 @@
 							$container.append(label);
 
 							if (storageItem != null && itemData.stages[1].stageStatus.toLowerCase() == 'passed') {
-								var qaUrl;
+								var qaUrl = linksMap[pipelineName] && linksMap[pipelineName](storageItem);
 
-								if (storageItem == 'master') {
-									qaUrl = 'https://ru.4gametest.com/';
-								} else {
-									qaUrl = 'https://' + storageItem.replace(/^feature-/, '') + '-ru.4gametest.com/';
+								if (qaUrl) {
+									$('<a>')
+										.addClass('go-ext-labels go-ext-labels--link')
+										.html('go to: ' + qaUrl)
+										.attr({
+											target: '_blank',
+											href: qaUrl
+										})
+										.appendTo($container);
 								}
-
-								$('<a>')
-									.addClass('go-ext-labels go-ext-labels--link')
-									.html('go to: ' + qaUrl)
-									.attr({
-										target: '_blank',
-										href: qaUrl
-									})
-									.appendTo($container);
 							}
 						});
 						result = container.innerHTML;
