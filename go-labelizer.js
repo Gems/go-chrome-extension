@@ -105,7 +105,7 @@
 									label
 										.attr({
 											target: '_blank',
-											href: 'https://github.inn.ru/4game-web/com.4game/compare/' + storageItem
+											href: compareMap[pipelineName] && compareMap[pipelineName](storageItem) || '#',
 										})
 										.addClass('go-ext-labels--info');
 								}
