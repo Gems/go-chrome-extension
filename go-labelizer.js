@@ -1,13 +1,7 @@
 (function($) {
 	var branchRegex = /overriding environment variable 'BRANCH' with value '([^']+)'/;
+	var masterBranchRegex = /setting environment variable 'BRANCH' to value '([^']+)'/;
 	var retryCountUntilFail = 3;
-
-	var map = {
-		'api2.4gametest.com': 'Build',
-		'm.4gametest.com': 'Create-Package',
-		'api.4gametest.com': 'Create-Package',
-		'4gamer-generator-featured': 'Create-Package',
-	};
 
 	var linksMap = {
 		'4gametest.com': function(item) {
@@ -37,22 +31,53 @@
 		},
 	};
 
-	function getBranchInfo(pipelineName, stageLocator, callback) {
-		var stageName = map[pipelineName] || 'Create_package';
+	function getBranchInfo(stageName, pipelineName, stageLocator) {
+		var uri = '/go/files/' + stageLocator + '/' + stageName + '/cruise-output/console.log';
 
-		return $.ajax({
-			url: '/go/files/' + stageLocator + '/' + stageName + '/cruise-output/console.log',
-			complete: function(jqXHR, textStatus) {
-				var branch;
+		return promisify($.ajax({url: uri}))
+			.then(function(response) {
+				var branch = branchRegex.exec(response);
+				var masterBranch = masterBranchRegex.exec(response);
 
-				if (typeof(jqXHR.responseText) === 'string') {
-					branch = branchRegex.exec(jqXHR.responseText);
-				}
+				return branch && branch[1] || masterBranch && masterBranch[1] || null;
+			});
+	}
 
-				if (typeof(callback) === 'function') {
-					callback(branch ? branch[1] : null);
-				}
-			}
+	function getStageName(pipelineName, pipelineVersion) {
+		var uri = '/go/pipelines/value_stream_map/' + pipelineName + '/' + pipelineVersion + '.json';
+
+		return promisify($.ajax({url: uri, dataType: 'json'}))
+			.then(function(response) {
+				return response.levels
+					.map(function(item) {
+						return item.nodes[0];
+					})
+					.filter(function(item) {
+						return item.name === pipelineName;
+					})
+					.reduce(function(item) {
+						return item;
+					})
+					.instances[0]
+					.stages[0]
+					.locator;
+			})
+			.then(function(uri) {
+				return promisify($.ajax({url: uri + '.json', dataType: 'json'}));
+			})
+			.then(function(response) {
+				var failed = $(response.jobs_failed.html).find('a[href]').attr('href');
+				var passed = $(response.jobs_passed.html).find('a[href]').attr('href');
+				var progress = $(response.jobs_in_progress.html).find('a[href]').attr('href');
+				var stageUri = failed || passed || progress;
+
+				return stageUri && stageUri.split('/').pop();
+			});
+	}
+
+	function promisify(deferred) {
+		return new Promise(function(resolve, reject) {
+			deferred.then(resolve, reject);
 		});
 	}
 
@@ -81,6 +106,8 @@
 			pipelineHistory._template.process = (function(process) {
 				return function(context, flags) {
 					var result = process.apply(this, arguments);
+					var pipelineName = context.data.pipelineName;
+					var pipelineVersion = context.data.count;
 
 					if (this.name === 'pipeline-history-list-template') {
 						var container = document.createElement('div');
@@ -94,7 +121,6 @@
 							var itemData = context.data.groups[0].history[i];
 							var label = $('<a>').addClass('go-ext-labels');
 							var storageItem = localStorage.getItem(item.id);
-							var pipelineName = context.data.pipelineName;
 
 							if (storageItem) {
 								label.html(storageItem);
@@ -117,22 +143,26 @@
 								label.html(counts[item.id] ? 'trying again' : 'loading info');
 							}
 
-							if (activeRequests[item.id]) {
-								activeRequests[item.id].abort();
-							}
-
-							if (storageItem == null && (!counts[item.id] || counts[item.id] && counts[item.id] < retryCountUntilFail)) {
-								activeRequests[item.id] = getBranchInfo(pipelineName, itemData.stages[0].stageLocator, function(branch) {
-									if (branch != null) {
-										localStorage.setItem(item.id, branch);
-									} else {
-										if (!counts[item.id]) {
-											counts[item.id] = 0;
+							if (!activeRequests[item.id] && storageItem == null && (!counts[item.id] || counts[item.id] && counts[item.id] < retryCountUntilFail)) {
+								activeRequests[item.id] = getStageName(pipelineName, pipelineVersion)
+									.then(function(stageName) {
+										return getBranchInfo(stageName, pipelineName, itemData.stages[0].stageLocator);
+									})
+									.catch(function(error) {
+										console.error(error);
+										return null;
+									})
+									.then(function(branch) {
+										if (branch != null) {
+											localStorage.setItem(item.id, branch);
+										} else {
+											if (!counts[item.id]) {
+												counts[item.id] = 0;
+											}
+											counts[item.id]++;
 										}
-										counts[item.id]++;
-									}
-									delete activeRequests[item.id];
-								});
+										delete activeRequests[item.id];
+									});
 							}
 
 							$parent.append($container);
